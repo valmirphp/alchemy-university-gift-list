@@ -4,14 +4,31 @@ const MerkleTree = require('../utils/MerkleTree');
 
 const serverUrl = 'http://localhost:1225';
 
+// create the merkle tree for the whole nice list
+const merkleTree = new MerkleTree(niceList);
+
 async function main() {
-  // TODO: how do we prove to the server we're on the nice list? 
+    // get arguments from command line
+    const args = process.argv.slice(2);
+    const name = args[0] || 'Norman Block';
 
-  const { data: gift } = await axios.post(`${serverUrl}/gift`, {
-    // TODO: add request body parameters here!
-  });
+    console.log("Finding proof for", name, "in the nice list...")
 
-  console.log({ gift });
+    // find the proof that norman block is in the list
+    const index = niceList.findIndex(n => n === name);
+
+    if (index === -1) {
+        console.log("Name not found in the nice list");
+        return;
+    }
+
+    const proof = merkleTree.getProof(index);
+
+    const {data: gift} = await axios.post(`${serverUrl}/gift`, {
+        name, proof
+    });
+
+    console.log({gift});
 }
 
 main();
